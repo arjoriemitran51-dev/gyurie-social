@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,21 +184,43 @@ selectedPhoto="";
 save();
 }
 
-function likePost(id){
-let p=posts.find(x=>x.id===id);
-if(!p)return;
-p.liked=!p.liked;
-p.likes+=p.liked?1:-1;
-save();
+
+function renderPosts(){
+let html=posts.map(p=>`
+<div class="card">
+<div class="posthead">
+<div class="avatar">🌸</div>
+<div style="flex:1">
+<b>Your Name</b>
+<div class="muted">Just now · GYURIE</div>
+</div>
+<button class="secondary" onclick="deletePost(${p.id})">🗑 Delete</button>
+</div>
+${p.text?`<p class="posttext">${escapeHTML(p.text)}</p>`:""}
+${p.photo?`<img class="postimage" src="${p.photo}" alt="Post photo">`:""}
+<div class="actions">
+<button class="${p.liked?'liked':''}" onclick="likePost(${p.id})">${p.liked?'♥':'♡'} ${p.likes} Likes</button>
+<button onclick="document.getElementById('comment-${p.id}').focus()">💬 ${p.comments.length} Comments</button>
+</div>
+${p.comments.map(c=>`<div class="commentline">${escapeHTML(c)}</div>`).join("")}
+<div class="comment">
+<input id="comment-${p.id}" placeholder="Write a comment...">
+<button class="secondary" onclick="addComment(${p.id},document.getElementById('comment-${p.id}'))">Send</button>
+</div>
+</div>`).join("");
+
+document.getElementById("feed").innerHTML=html||'<div class="card empty">🌸<h3>Your feed is waiting</h3>Create your first post on GYURIE!</div>';
+document.getElementById("exploreFeed").innerHTML=html||'<div class="card empty">No posts to explore yet.</div>';
+document.getElementById("profileFeed").innerHTML=html;
+document.getElementById("postCount").textContent=posts.length;
 }
 
-function addComment(id,input){
-let p=posts.find(x=>x.id===id);
-let value=input.value.trim();
-if(!value)return;
-p.comments.push(value);
+function deletePost(id){
+if(!confirm("Are you sure you want to delete this post?"))return;
+posts=posts.filter(p=>p.id!==id);
 save();
 }
+  
 
 function renderPosts(){
 let html=posts.map(p=>`
